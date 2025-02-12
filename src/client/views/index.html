@@ -4,9 +4,7 @@
         <meta charset="utf-8">
         <title>Test</title>
     </head>
-
     <body>
-
         <header>
             <div class="">
                 Logo
@@ -18,16 +16,22 @@
 
         <main>
             <section>
-                <form id="urlForm">
-                    <input id="name" type="text" name="url" placeholder="Enter URL" required>
+                <form id="urlForm" method="post" onsubmit="return Client.handleSubmit(event)">
+                    <input id="URI" type="text" name="url" placeholder="Enter URL" required>
                     <button id="submitButton" type="submit">Submit</button>
                 </form>
-                
+                <p id="error" style="display: none; color: red;"></p>
             </section>
 
             <section>
                 <strong>Form Results:</strong>
-                <div id="results"></div>
+                <ul>
+                    <li id="agreement" style="display: none;">Agreement: </li>
+                    <li id="subjectivity" style="display: none;">Subjectivity: </li>
+                    <li id="confidence" style="display: none;">Confidence: </li>
+                    <li id="irony" style="display: none;">Irony: </li>
+                    <li id="score_tag" style="display: none;">Score Tag: </li>
+                </ul>
             </section>
         </main>
 
@@ -35,5 +39,8 @@
             <p>This is a footer</p>
         </footer>
 
+        <div id="loader" style="display: none;">Loading...</div>
+
+        <script src="./js/index.js" type="module"></script>
     </body>
 </html>

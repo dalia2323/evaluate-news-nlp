@@ -1,89 +1,47 @@
-// Import required dependencies
-const express = require('express');
-const bodyParser = require('body-parser');
-const axios = require('axios');
-const cheerio = require('cheerio');
-const cors = require('cors');
+const http = require('http');
+const { analyze } = require('./analyse');
+const dotenv = require('dotenv');
+dotenv.config();
 
-// Initialize the Express application
-const app = express();
+const MEAN_CLOUD_API_KEY = process.env.API_KEY;
 
-// Apply middleware
-app.use(cors()); // Enable Cross-Origin Resource Sharing
-app.use(bodyParser.json()); // Parse JSON request bodies
+const server = http.createServer(async (req, res) => {
+    // تمكين CORS
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-// Encapsulated function to scrape text from a URL
-async function scrapeTextFromURL(url) {
-    try {
-        console.log(`Fetching and scraping text from URL: ${url}`);
+    if (req.method === 'POST' && req.url === '/') {
+        let body = '';
+        req.on('data', chunk => {
+            body += chunk.toString(); // تحويل البيانات إلى سلسلة نصية
+        });
 
-        // Fetch the webpage data
-        const { data } = await axios.get(url);
+        req.on('end', async () => {
+            try {
+                const { url } = JSON.parse(body); // تحليل البيانات كـ JSON
+                const Analyze = await analyze(url, MEAN_CLOUD_API_KEY);
+                const { code, msg, sample } = Analyze;
 
-        // Use Cheerio to load the HTML and extract the text
-        const $ = cheerio.load(data);
-        const text = $('body').text().trim();
+                res.writeHead(200, { 'Content-Type': 'application/json' });
 
-        // Check if text content exists
-        if (!text) {
-            console.error('No text content found at the provided URL');
-            return null;
-        }
-
-        // Extract and return the first 200 characters of the text
-        const trimmedText = text.slice(0, 200);
-        console.log(`Extracted Text (200 characters):\n${trimmedText}\n--- End of Text Preview ---`);
-        return trimmedText;
-    } catch (error) {
-        console.error('Error while scraping text from the URL:', error.message);
-        throw new Error('Failed to scrape text from the URL');
-    }
-}
-
-// Route to analyze text from a URL
-app.post('/analyze-url', async (req, res) => {
-    const { url } = req.body;
-
-    // Validate the input URL
-    if (!url) {
-        console.error('No URL provided in the request body');
-        return res.status(400).json({ error: 'URL is required' });
-    }
-
-    try {
-        // Step 1: Scrape text from the provided URL
-        const text = await scrapeTextFromURL(url);
-
-        if (!text) {
-            return res.status(400).json({ error: 'No text content found at the provided URL' });
-        }
-
-        // Step 2: Connect to the AWS NLP API
-        // --- Learner Task: Add the code to send the extracted text to the AWS NLP API below ---
-        // Use `axios.post` to send a POST request to the API.
-        // The endpoint URL is: https://kooye7u703.execute-api.us-east-1.amazonaws.com/NLPAnalyzer
-        // Send the `text` as part of the request body.
-
-        /*
-        Example Code:
-        const response = await axios.post('https://kooye7u703.execute-api.us-east-1.amazonaws.com/NLPAnalyzer', { text });
-        return res.json(response.data); // Send the NLP results back to the client
-        */
-
-        // Placeholder response for learners to complete
-        return res.json({ message: 'NLP analysis result will be here. Complete the API call above!' });
-    } catch (error) {
-        console.error('Error during URL processing or API request:', error.message);
-        return res.status(500).json({ error: 'Failed to analyze the URL' });
+                if (code === 212 || code === 100) {
+                    res.end(JSON.stringify({ msg, code }));
+                } else {
+                    res.end(JSON.stringify({ sample, code }));
+                }
+            } catch (error) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ msg: 'Internal Server Error', code: 500 }));
+            }
+        });
+    } else {
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
+        res.end('Not Found');
     }
 });
 
-// Default route
-app.get('/', (req, res) => {
-    res.send("This is the server API page. You may access its services via the client app.");
-});
-
-// Start the server
-app.listen(8000, () => {
-    console.log('Server running on port 8000');
+const port = 8000;
+server.listen(port, () => {
+    console.log(`Server is running on http://localhost:${port}`);
 });
