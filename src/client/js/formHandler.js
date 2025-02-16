@@ -1,15 +1,16 @@
 import axios from "axios";
-document.addEventListener("DOMContentLoaded", function () {
-    setTimeout(() => {
-        const errorElement = document.getElementById("error");
-        if (errorElement) {
-            hide_error();
-        } else {
-            console.error("❌ عنصر #error غير موجود في DOM. تأكد من إضافته إلى index.html");
-        }
-    }, 500);
+import { isValidUrl } from "./nameChecker.js"; 
 
+document.addEventListener("DOMContentLoaded", function () {
+    const errorElement = document.getElementById("error");
     const input = document.getElementById("URI");
+
+    if (errorElement) {
+        hide_error();
+    } else {
+        console.error("❌ عنصر #error غير موجود في DOM. تأكد من إضافته إلى index.html");
+    }
+
     if (input) {
         input.addEventListener("change", (e) => {
             e.preventDefault();
@@ -20,23 +21,6 @@ document.addEventListener("DOMContentLoaded", function () {
         console.error("❌ عنصر #URI غير موجود في DOM. تأكد من إضافته إلى index.html");
     }
 });
-
-
-//calling the isValidUrl function to use after sumission
-const { isValidUrl } = require("./nameChecker");
-
-const input = document.getElementById("URI");
-
-//handle input change
-document.addEventListener('DOMContentLoaded', function () {
-    input.addEventListener("change", (e)=>{
-        e.preventDefault()
-        hide_error()
-        show_results(false)
-    })
-}
-)
-
 
 // handle the submit
 async function handleSubmit(e) {
@@ -50,27 +34,27 @@ async function handleSubmit(e) {
         input.value = "";
         return;
     }
+
     loading(true);
-const { data } = await axios.post('http://localhost:8000/', { url: input.value }, {
-    headers: { 'Content-Type': 'application/json' }
-});
+    const { data } = await axios.post('http://localhost:8000/', { url: input.value }, {
+        headers: { 'Content-Type': 'application/json' }
+    });
 
     display_results(data);
 }
 
 //showing the data on the ui
 const display_results = data => {
-
-    loading(false)
+    loading(false);
     if (data.msg) {
-        show_error()
-        show_results(false)
+        show_error();
+        show_results(false);
         document.getElementById("error").innerHTML = `${data.msg}`;
-
         return;
     }
-    hide_error()
-    show_results(true)
+
+    hide_error();
+    show_results(true);
 
     document.getElementById("agreement").innerHTML = `Agreement: ${data.sample.agreement}`;
     document.getElementById("subjectivity").innerHTML = `Subjectivity: ${data.sample.subjectivity}`;
@@ -79,35 +63,29 @@ const display_results = data => {
     document.getElementById("score_tag").innerHTML = `Score Tag: ${data.sample.score_tag}`;
 }
 
-
 const loading = (bool) => {
-    // loader
     const loader = document.getElementById('loader');
-    //
     if (bool) {
-        // Show the loader
         loader.style.display = 'block';
         return;
     }
-    //hide the loader
     loader.style.display = 'none';
-
 }
 
 const show_results = (bool) => {
-    if (bool) {
-        document.querySelectorAll("ul li").forEach(element => {
-            element.style.display = "block"
-        })
-        return;
-    }
-    document.querySelectorAll("ul li").forEach(element => {
-        element.style.display = "none"
-    })
-    return;
+    const listItems = document.querySelectorAll("ul li");
+    listItems.forEach(element => {
+        element.style.display = bool ? "block" : "none";
+    });
 }
 
-const show_error = () => document.getElementById("error").style.display = "block";
+const show_error = () => {
+    const errorElement = document.getElementById("error");
+    if (errorElement) {
+        errorElement.style.display = "block";
+    }
+}
+
 const hide_error = () => {
     const errorElement = document.getElementById("error");
     if (errorElement) {
@@ -115,4 +93,4 @@ const hide_error = () => {
     }
 };
 
-export { handleSubmit }
+export { handleSubmit };

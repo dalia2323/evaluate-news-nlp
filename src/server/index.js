@@ -2,11 +2,15 @@ const http = require('http');
 const { analyze } = require('./analyse');
 const dotenv = require('dotenv');
 dotenv.config();
+app.use(express.static('dist'))
+app.use(express.json())
+dotenv.config()
+app.use(cors())
+
 
 const MEAN_CLOUD_API_KEY = process.env.API_KEY;
 
 const server = http.createServer(async (req, res) => {
-    // تمكين CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');

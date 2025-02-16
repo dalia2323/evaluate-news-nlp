@@ -1,8 +1,5 @@
-const validUrl = require('valid-url');
-
+import validUrl from 'valid-url'; 
 
 const isValidUrl = (url) => Boolean(validUrl.isWebUri(`${url}`));
 
-module.exports = {
-    isValidUrl,
-};
+export { isValidUrl }; // صحيح
