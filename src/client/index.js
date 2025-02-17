@@ -1,13 +1,27 @@
-// js files
-import { handleSubmit } from './js/formHandler'
+import { handleSubmit } from './js/formHandler';
+import { analyzeText } from './js/formHandler';
+import { updateUI } from './js/updateUI';
 
-// sass files
-import './styles/resets.scss'
-import './styles/base.scss'
-import './styles/footer.scss'
-import './styles/form.scss'
-import './styles/header.scss'
-// alert("I EXIST")
-// console.log("CHANGE!!");
+import './styles/resets.scss';
+import './styles/base.scss';
+import './styles/form.scss';
+import './styles/header.scss';
+import './styles/footer.scss';
 
-export { handleSubmit }
+// جعل handleSubmit متاحًا عالميًا حتى يمكن استدعاؤه من أي مكان
+window.handleSubmit = handleSubmit;
+
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('analyze-form');
+    if (form) {
+        form.addEventListener('submit', handleSubmit);
+    } else {
+        console.error("❌ خطأ: لم يتم العثور على العنصر #analyze-form!");
+    }
+});
+
+export {
+    handleSubmit,
+    analyzeText,
+    updateUI
+};

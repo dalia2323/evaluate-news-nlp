@@ -1,51 +1,53 @@
-const http = require('http');
-const { analyze } = require('./analyse');
 const dotenv = require('dotenv');
 dotenv.config();
-app.use(express.static('dist'))
-app.use(express.json())
-dotenv.config()
-app.use(cors())
 
+var path = require('path');
+const express = require('express');
+const fetch = require("node-fetch");
+var bodyParser = require('body-parser');
+var validator = require('validator');
+const app = express();
+let reqType = 'txt';
+const cors = require('cors');
+app.use(cors());  
+const corsOptions = {
+    origin: 'http://localhost:3001',  // السماح فقط للطلبات من الكلاينت على المنفذ 3001
+    methods: ['GET', 'POST'], // السماح فقط بأساليب GET و POST
+};
 
-const MEAN_CLOUD_API_KEY = process.env.API_KEY;
+// تفعيل CORS مع الإعدادات المحددة
+app.use(cors(corsOptions));
 
-const server = http.createServer(async (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+app.use(bodyParser.json()) // لتفعيل استخدام JSON
+app.use(bodyParser.urlencoded({ extended: false })) // لتفعيل استخدام بيانات URL المشفرة
 
-    if (req.method === 'POST' && req.url === '/') {
-        let body = '';
-        req.on('data', chunk => {
-            body += chunk.toString(); // تحويل البيانات إلى سلسلة نصية
-        });
+app.use(express.static('dist'));
 
-        req.on('end', async () => {
-            try {
-                const { url } = JSON.parse(body); // تحليل البيانات كـ JSON
-                const Analyze = await analyze(url, MEAN_CLOUD_API_KEY);
-                const { code, msg, sample } = Analyze;
+app.get('/', function (req, res) {
+    res.sendFile(path.resolve('src/client/views/index.html'));
+})
 
-                res.writeHead(200, { 'Content-Type': 'application/json' });
+// تفعيل السيرفر للاستماع على المنفذ 8081
+app.listen(8081, function () {
+    console.log('Example app listening on port 8081!');
+})
 
-                if (code === 212 || code === 100) {
-                    res.end(JSON.stringify({ msg, code }));
-                } else {
-                    res.end(JSON.stringify({ sample, code }));
-                }
-            } catch (error) {
-                res.writeHead(500, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ msg: 'Internal Server Error', code: 500 }));
-            }
-        });
-    } else {
-        res.writeHead(404, { 'Content-Type': 'text/plain' });
-        res.end('Not Found');
+app.post('/userData', async (req, res) => {
+    console.log("Received request:", req.body); // للتحقق من البيانات المستلمة
+
+    if (!req.body.input) {
+        return res.status(400).json({ error: "No input provided" });
     }
-});
 
-const port = 8000;
-server.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
+    let reqType = validator.isURL(req.body.input) ? 'url' : 'txt';
+
+    const response = await fetch(`https://api.meaningcloud.com/sentiment-2.1?key=${process.env.API_KEY}&lang=auto&${reqType}=${req.body.input}`);
+    
+    try {
+        const data = await response.json();
+        res.json(data);
+    } catch (error) {
+        console.log("Error:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
 });
