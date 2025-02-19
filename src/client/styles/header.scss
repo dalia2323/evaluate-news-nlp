@@ -1,5 +1,9 @@
 header {
     display: flex;
     justify-content: space-between;
-    padding: 10px 40px;
+    align-items: center;
+    padding: 15px 40px;
+    background-color: #333;
+    color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }

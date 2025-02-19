@@ -1,53 +1,80 @@
-const dotenv = require('dotenv');
-dotenv.config();
-
-var path = require('path');
 const express = require('express');
-const fetch = require("node-fetch");
-var bodyParser = require('body-parser');
-var validator = require('validator');
-const app = express();
-let reqType = 'txt';
+const bodyParser = require('body-parser');
+const axios = require('axios');
+const cheerio = require('cheerio');
 const cors = require('cors');
-app.use(cors());  
-const corsOptions = {
-    origin: 'http://localhost:3001',  // السماح فقط للطلبات من الكلاينت على المنفذ 3001
-    methods: ['GET', 'POST'], // السماح فقط بأساليب GET و POST
+
+const app = express();
+
+// Middleware setup
+app.use(cors());
+app.use(bodyParser.json());
+app.use(express.static('client'));
+
+// Function to extract text from a given URL
+const extractTextFromURL = async (url) => {
+    try {
+        console.log(`Scraping content from: ${url}`);
+        const response = await axios.get(url);
+        const $ = cheerio.load(response.data);
+        const extractedText = $('body').text().trim();
+
+        if (!extractedText) {
+            console.warn('No readable content found on the provided URL');
+            return null;
+        }
+
+        const previewText = extractedText.substring(0, 200);
+        console.log(`Extracted Preview:\n${previewText}\n--- End of Preview ---`);
+        return previewText;
+    } catch (err) {
+        console.error('Scraping error:', err.message);
+        throw new Error('Unable to extract text from the URL');
+    }
 };
 
-// تفعيل CORS مع الإعدادات المحددة
-app.use(cors(corsOptions));
+// Endpoint to analyze a given URL
+app.post('/analyze-url', async (req, res) => {
+    const { url } = req.body;
 
-app.use(bodyParser.json()) // لتفعيل استخدام JSON
-app.use(bodyParser.urlencoded({ extended: false })) // لتفعيل استخدام بيانات URL المشفرة
-
-app.use(express.static('dist'));
-
-app.get('/', function (req, res) {
-    res.sendFile(path.resolve('src/client/views/index.html'));
-})
-
-// تفعيل السيرفر للاستماع على المنفذ 8081
-app.listen(8081, function () {
-    console.log('Example app listening on port 8081!');
-})
-
-app.post('/userData', async (req, res) => {
-    console.log("Received request:", req.body); // للتحقق من البيانات المستلمة
-
-    if (!req.body.input) {
-        return res.status(400).json({ error: "No input provided" });
+    if (!url) {
+        console.warn('Missing URL in request body');
+        return res.status(400).json({ error: 'A valid URL is required' });
     }
 
-    let reqType = validator.isURL(req.body.input) ? 'url' : 'txt';
-
-    const response = await fetch(`https://api.meaningcloud.com/sentiment-2.1?key=${process.env.API_KEY}&lang=auto&${reqType}=${req.body.input}`);
-    
     try {
-        const data = await response.json();
-        res.json(data);
-    } catch (error) {
-        console.log("Error:", error);
-        res.status(500).json({ error: "Internal Server Error" });
+        new URL(url); 
+    } catch (err) {
+        console.warn('Invalid URL format:', url);
+        return res.status(400).json({ error: 'Invalid URL format' });
     }
+
+    try {
+        const textContent = await extractTextFromURL(url);
+
+        if (!textContent) {
+            return res.status(400).json({ error: 'No text found on the given webpage' });
+        }
+
+        const apiResponse = await axios.post(
+            'https://kooye7u703.execute-api.us-east-1.amazonaws.com/NLPAnalyzer', 
+            { text: textContent }
+        );
+
+        return res.json(apiResponse.data);
+    } catch (err) {
+        console.error('Processing error:', err.message);
+        return res.status(500).json({ error: 'Error processing the request' });
+    }
+});
+
+// Default route
+app.get('/', (req, res) => {
+    res.send("Welcome to the server API. Use the client application to interact.");
+});
+
+// Start the server
+const PORT = 8000;
+app.listen(PORT, () => {
+    console.log(`Server is live on port ${PORT}`);
 });

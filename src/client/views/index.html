@@ -1,47 +1,48 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
-    <head>
-        <meta charset="utf-8">
-        <title>Test</title>
-    </head>
-    <body>
-        <header>
-            <div class="">
-                Logo
-            </div>
-            <div class="">
-                navigation
-            </div>
-        </header>
+<html lang="en">
+<head>
+    <!-- Character encoding set to UTF-8 for proper text rendering -->
+    <meta charset="UTF-8">
+    
+    <!-- Viewport settings for responsive design (adjusts for mobile) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Page title displayed in browser tab -->
+    <title>Test</title>
+</head>
+<body>
+    <header>
+        <div class="">
+            Logo
+        </div>
+        <div class="">
+            navigation
+        </div>
+    </header>
+    <!-- Main title of the page -->
+    <h1>URL Analysis</h1>
 
-        <main>
-            <section>
-                <form id="analyze-form">
-                    <input id="URI" type="text" name="url" placeholder="Enter URL" required>
-                    <input type="submit" value="Analyze text">
-                </form>
-                <p id="error" style="display: none; color: red;"></p>
-            </section>
+    <!-- Form to submit a URL for analysis -->
+    <form id="url-form">
+        <!-- Input field for entering the URL -->
+        <input type="text" id="url" placeholder="Enter URL" />
+        
+        <!-- Submit button to trigger the analysis -->
+        <button type="submit">Analyze</button>
+        <!-- Div to display the result, initially hidden (style="display:none;") -->
+        <div id="result" style="display:none;">
+            <!-- Paragraph to show sentiment result -->
+            <p id="sentiment"></p>
+            
+            <!-- Preformatted text block to display detailed analysis data -->
+            <pre id="analysis-data"></pre>
+        </div>
+    </form>
 
-            <section>
-                <strong>Form Results:</strong>
-                <ul>
-                    <li id="agreement" style="display: none;">Agreement: </li>
-                    <li id="subjectivity" style="display: none;">Subjectivity: </li>
-                    <li id="confidence" style="display: none;">Confidence: </li>
-                    <li id="irony" style="display: none;">Irony: </li>
-                    <li id="score_tag" style="display: none;">Score Tag: </li>
-                </ul>
-            </section>
-        </main>
-
-        <footer>
-            <p>This is a footer</p>
-        </footer>
-
-        <div id="loader" style="display: none;">Loading...</div>
-        <!-- <script src="/js/formHandler.js">
-   
-        </script> -->
-    </body>
+    <!-- Footer section -->
+    <footer>
+        <p>&copy; 2025 Text Analysis. All rights reserved.</p>
+        <p>Created by Dalia saleem</p>
+    </footer>
+</body>
 </html>

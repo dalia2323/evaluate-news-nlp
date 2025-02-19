@@ -1,17 +1,27 @@
 $max-width: 800px;
-$margin-auto: 50px auto;
 
 body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    font-family: Arial, sans-serif; /* Add a font for better readability */
+    background-color: #f4f4f4; /* Light background color */
 }
 
 main {
     flex: 2;
+    padding: 20px; /* Add some padding for better spacing inside the main content */
+    background-color: #fff; /* White background for the main content */
+    border-radius: 8px; /* Slight rounding of corners */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for the main section */
 }
 
 section {
     max-width: $max-width;
-    margin: $margin-auto;
+    // margin: $margin-auto;
+    padding: 20px; 
+    background-color: #fff; 
+    border-radius: 8px; 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
 }
+
